@@ -1,6 +1,6 @@
 # The Cat API Go SDK 🐱
 
-Welcome to the The Cat API Go SDK! This purr-fectly crafted library allows you to interact with The Cat API.
+Welcome to the [The Cat API](https://thecatapi.com/) Go SDK! This purr-fectly crafted library allows you to interact with The Cat API.
 
 ### Getting Started
 Create a client:
