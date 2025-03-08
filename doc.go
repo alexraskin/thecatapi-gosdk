@@ -1,7 +1,7 @@
 // Package thecatapi provides a Go client for The Cat API (https://thecatapi.com/),
 // a service that offers a wide variety of cat images, breeds, and related information.
 //
-// Getting Started
+// # Getting Started
 //
 // To use this package, first create a client:
 //
@@ -18,7 +18,7 @@
 //		thecatapi.WithHTTPClient(&http.Client{Timeout: 10 * time.Second}),
 //	)
 //
-// Searching for Cat Images
+// # Fetching Cat Images
 //
 // The most common operation is searching for cat images using functional options:
 //
@@ -36,7 +36,29 @@
 //		thecatapi.WithIncludeCategories(true),
 //	)
 //
-// API Key Requirements
+// # Exploring Breeds
+//
+// Fetch information about cat breeds:
+//
+//	breeds, err := client.GetBreeds(thecatapi.WithBreedLimit(5))
+//	if err != nil {
+//		log.Fatalf("Error fetching breeds: %v", err)
+//	}
+//
+//	for _, breed := range breeds {
+//		fmt.Printf("Breed: %s, Origin: %s\n", breed.Name, breed.Origin)
+//	}
+//
+// # Uploading Your Cat Images
+//
+// Upload your cat photos:
+//
+//	err := client.UploadImage(imageData, "cat.jpg", thecatapi.WithSubID("my-cat"), thecatapi.WithBreedIDs("beng"))
+//	if err != nil {
+//		log.Fatalf("Error uploading image: %v", err)
+//	}
+//
+// # API Key Requirements
 //
 // While The Cat API can be used without an API key, there are limitations:
 //   - Without an API key: Maximum 10 images per request
@@ -44,7 +66,7 @@
 //
 // To obtain an API key, visit: https://thecatapi.com/signup
 //
-// Error Handling
+// # Error Handling
 //
 // All methods return errors that should be checked:
 //
