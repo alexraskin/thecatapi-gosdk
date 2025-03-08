@@ -1,9 +1,12 @@
 package thecatapi
 
 import (
+	"context"
 	"errors"
 	"net/url"
 	"strconv"
+
+	"github.com/alexraskin/thecatapi/internal/httpclient"
 )
 
 type CatByIDImageOption func(*CatByIDImageParams)
@@ -26,7 +29,21 @@ func (c *Client) GetCatImageByID(opts ...CatByIDImageOption) (*CatByIDImageRespo
 
 	var response CatByIDImageResponse
 
-	err := c.doRequest("GET", "/images/"+params.ID, nil, &response)
+	requestOpts := httpclient.RequestOptions{
+		Ctx:         context.Background(),
+		BaseURL:     c.baseURL,
+		APIKey:      c.apiKey,
+		Client:      c.httpClient,
+		Method:      "GET",
+		Path:        "/images/" + params.ID,
+		Query:       nil,
+		Body:        nil,
+		ContentType: "application/json",
+		Result:      &response,
+	}
+
+	err := httpclient.DoRequest(requestOpts)
+
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +118,6 @@ func (p *YourCatImagesQueryParams) toURLValues() (url.Values, error) {
 	if p.Limit > 0 {
 		values.Add("limit", strconv.Itoa(p.Limit))
 	}
-
 	if p.Limit > 10 {
 		return nil, errors.New("limit must be less than or equal to 10")
 	}
@@ -146,7 +162,13 @@ func (c *Client) GetYourCatImages(opts ...YourCatImagesOption) (*YourCatImagesRe
 
 	var response YourCatImagesResponse
 
-	err = c.doRequest("GET", "/images/search", values, &response)
+	requestOpts := defaultRequestOptions(c)
+	requestOpts.Path = "/images/search"
+	requestOpts.Query = values
+	requestOpts.Result = &response
+	requestOpts.ContentType = "application/json"
+
+	err = httpclient.DoRequest(requestOpts)
 	if err != nil {
 		return nil, err
 	}

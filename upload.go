@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/textproto"
+
+	"github.com/alexraskin/thecatapi/internal/httpclient"
 )
 
 type CatImageUploadOptions func(*CatImageUploadBody)
@@ -64,7 +66,7 @@ func encodeCatImageUploadBody(body CatImageUploadBody, fileName string) (*bytes.
 	return &b, writer.FormDataContentType(), nil
 }
 
-func (c *Client) UploadImage(imageData []byte, fileName string, opts ...CatImageUploadOptions) ([]CatImageUploadResponse, error) {
+func (c *Client) UploadImage(imageData []byte, fileName string, opts ...CatImageUploadOptions) (*CatImageUploadResponse, error) {
 	body := defaultCatImageUploadBody()
 	body.File = imageData
 
@@ -77,11 +79,19 @@ func (c *Client) UploadImage(imageData []byte, fileName string, opts ...CatImage
 		return nil, fmt.Errorf("error encoding request body: %v", err)
 	}
 
-	var response []CatImageUploadResponse
-	err = c.doRequestWithBody("POST", "/images/upload", requestBody, contentType, &response)
+	var response CatImageUploadResponse
+
+	requestOpts := defaultRequestOptions(c)
+	requestOpts.Method = "POST"
+	requestOpts.Path = "/images/upload"
+	requestOpts.Body = requestBody
+	requestOpts.ContentType = contentType
+	requestOpts.Result = &response
+
+	err = httpclient.DoRequest(requestOpts)
 	if err != nil {
 		return nil, fmt.Errorf("error uploading image: %v", err)
 	}
 
-	return response, nil
+	return &response, nil
 }

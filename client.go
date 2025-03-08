@@ -1,8 +1,11 @@
 package thecatapi
 
 import (
+	"context"
 	"net/http"
 	"time"
+
+	"github.com/alexraskin/thecatapi/internal/httpclient"
 )
 
 type Client struct {
@@ -12,6 +15,18 @@ type Client struct {
 }
 
 type ClientOptions func(*Client)
+
+func defaultRequestOptions(c *Client) httpclient.RequestOptions {
+	return httpclient.RequestOptions{
+		Ctx:     context.Background(),
+		BaseURL: c.baseURL,
+		APIKey:  c.apiKey,
+		Client:  c.httpClient,
+		Method:  "GET",
+		Query:   nil,
+		Body:    nil,
+	}
+}
 
 func defaultClient() *Client {
 	return &Client{
@@ -41,12 +56,9 @@ func WithHTTPClient(httpClient *http.Client) ClientOptions {
 }
 
 func NewClient(opts ...ClientOptions) *Client {
-
 	c := defaultClient()
-
 	for _, fn := range opts {
 		fn(c)
 	}
-
 	return c
 }

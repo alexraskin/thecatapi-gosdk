@@ -3,6 +3,8 @@ package thecatapi
 import (
 	"net/url"
 	"strconv"
+
+	"github.com/alexraskin/thecatapi/internal/httpclient"
 )
 
 type CatBreedOptions func(*CatBreedParams)
@@ -48,7 +50,13 @@ func (c *Client) GetBreeds(opts ...CatBreedOptions) ([]CatBreedResponse, error) 
 
 	var breeds []CatBreedResponse
 
-	err := c.doRequest("GET", "/breeds", query, &breeds)
+	requestOpts := defaultRequestOptions(c)
+	requestOpts.Path = "/breeds"
+	requestOpts.Query = query
+	requestOpts.Result = &breeds
+	requestOpts.ContentType = "application/json"
+
+	err := httpclient.DoRequest(requestOpts)
 
 	if err != nil {
 		return nil, err

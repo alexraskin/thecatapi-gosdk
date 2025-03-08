@@ -2,7 +2,10 @@ package thecatapi
 
 import (
 	"net/url"
+	"strconv"
 	"strings"
+
+	"github.com/alexraskin/thecatapi/internal/httpclient"
 )
 
 type CatImageSearchOptions func(*CatImageSearchParams)
@@ -62,6 +65,12 @@ func WithOrder(order OrderType) CatImageSearchOptions {
 
 func (p *CatImageSearchParams) toURLValues() url.Values {
 	values := url.Values{}
+	if p.Page > 0 {
+		values.Add("page", strconv.Itoa(p.Page))
+	}
+	if p.Limit > 0 {
+		values.Add("limit", strconv.Itoa(p.Limit))
+	}
 	if p.Size != "" {
 		values.Add("size", string(p.Size))
 	}
@@ -91,7 +100,13 @@ func (c *Client) SearchCats(opts ...CatImageSearchOptions) ([]CatImageSearchResp
 
 	var cats []CatImageSearchResponse
 
-	err := c.doRequest("GET", "/images/search", query, &cats)
+	requestOpts := defaultRequestOptions(c)
+	requestOpts.Path = "/images/search"
+	requestOpts.Query = query
+	requestOpts.Result = &cats
+	requestOpts.ContentType = "application/json"
+
+	err := httpclient.DoRequest(requestOpts)
 
 	if err != nil {
 		return nil, err

@@ -3,6 +3,8 @@ package thecatapi
 import (
 	"net/url"
 	"strconv"
+
+	"github.com/alexraskin/thecatapi/internal/httpclient"
 )
 
 type CatFactsOptions func(*CatFactsParams)
@@ -62,7 +64,14 @@ func (c *Client) GetCatFacts(opts ...CatFactsOptions) (*CatFactsResponse, error)
 
 	var response CatFactsResponse
 
-	err = c.doRequest("GET", "/facts", values, &response)
+	requestOpts := defaultRequestOptions(c)
+	requestOpts.Method = "GET"
+	requestOpts.Path = "/facts"
+	requestOpts.Query = values
+	requestOpts.Result = &response
+
+	err = httpclient.DoRequest(requestOpts)
+
 	if err != nil {
 		return nil, err
 	}
