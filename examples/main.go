@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/alexraskin/thecatapi"
 )
@@ -19,17 +20,17 @@ func main() {
 		fmt.Println(cat.URL)
 	}
 
-	// filePath := "testdata/cat.jpg"
+	filePath := "testdata/cat.jpg"
 
-	// image, err := os.ReadFile(filePath)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	image, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// upload, err := client.UploadImage(image, "cosmo.jpg")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	upload, err := client.UploadImage(image, "cosmo.jpg")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// fmt.Println(upload.ID)
+	fmt.Println(upload.ID)
 }
