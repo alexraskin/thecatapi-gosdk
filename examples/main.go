@@ -9,15 +9,42 @@ import (
 )
 
 func main() {
-	client := thecatapi.NewClient(thecatapi.WithAPIKey("YOUR API KEY"))
+	client := thecatapi.NewClient(thecatapi.WithAPIKey(os.Getenv("THECATAPI_API_KEY")))
 
-	cats, err := client.SearchCats(thecatapi.WithImageSearchLimit(10))
+	idLookup, err := client.GetCatImageByID(thecatapi.WithCatImageID("oR3LMBqEZ"))
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, cat := range cats {
+	fmt.Println(idLookup.ID)
+	fmt.Println(idLookup.URL)
+	fmt.Println(idLookup.Width)
+	fmt.Println(idLookup.Height)
+
+	breeds, err := client.GetBreeds(thecatapi.WithBreedLimit(5))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, breed := range *breeds {
+		fmt.Println(breed.Name)
+	}
+
+	cats, err := client.SearchCats(
+		thecatapi.WithImageSearchLimit(5),
+		thecatapi.WithImageSearchOrder(thecatapi.OrderRandom),
+		thecatapi.WithImageSearchSize(thecatapi.SizeSmall),
+		thecatapi.WithImageSearchFormat(thecatapi.FormatJSON),
+		thecatapi.WithImageSearchHasBreeds(true),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, cat := range *cats {
 		fmt.Println(cat.URL)
+		fmt.Println(cat.ID)
 	}
 
 	filePath := "testdata/cat.jpg"

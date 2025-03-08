@@ -50,6 +50,26 @@ func (p *CatFactsParams) toURLValues() (url.Values, error) {
 	return values, nil
 }
 
+// GetCatFacts retrieves a list of cat facts from The Cat API.
+// It allows customization of the request through functional options.
+//
+// Parameters:
+//
+//	opts - A variadic list of CatFactsOptions functions that modify the request parameters.
+//	       These options can be used to set pagination and other query parameters.
+//
+// Returns:
+//
+//	*CatFactsResponse - A pointer to a CatFactsResponse struct containing the cat facts.
+//	error - An error if the request fails or if there is an issue with the response.
+//
+// Example usage:
+//
+//	facts, err := client.GetCatFacts(thecatapi.WithCatFactsLimit(5))
+//	if err != nil {
+//	    log.Fatalf("Error fetching cat facts: %v", err)
+//	}
+//	fmt.Printf("Cat Fact: %s\n", facts.Fact)
 func (c *Client) GetCatFacts(opts ...CatFactsOptions) (*CatFactsResponse, error) {
 	params := defaultCatFactsParams()
 
@@ -64,13 +84,7 @@ func (c *Client) GetCatFacts(opts ...CatFactsOptions) (*CatFactsResponse, error)
 
 	var response CatFactsResponse
 
-	requestOpts := defaultRequestOptions(c)
-	requestOpts.Method = "GET"
-	requestOpts.Path = "/facts"
-	requestOpts.Query = values
-	requestOpts.Result = &response
-
-	err = httpclient.DoRequest(requestOpts)
+	err = httpclient.DoRequest(newRequestOptions(c, "/facts", values, nil, &response))
 
 	if err != nil {
 		return nil, err

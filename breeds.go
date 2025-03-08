@@ -39,7 +39,29 @@ func (p *CatBreedParams) toURLValues() url.Values {
 	return values
 }
 
-func (c *Client) GetBreeds(opts ...CatBreedOptions) ([]CatBreedResponse, error) {
+// GetBreeds retrieves a list of cat breeds from The Cat API.
+// It allows customization of the request through functional options.
+//
+// Parameters:
+//
+//	opts - A variadic list of CatBreedOptions functions that modify the request parameters.
+//	       These options can be used to set pagination and other query parameters.
+//
+// Returns:
+//
+//	*[]CatBreedResponse - A pointer to a slice of CatBreedResponse structs containing information about each breed.
+//	error - An error if the request fails or if there is an issue with the response.
+//
+// Example usage:
+//
+//	breeds, err := client.GetBreeds(thecatapi.WithBreedLimit(5))
+//	if err != nil {
+//	    log.Fatalf("Error fetching breeds: %v", err)
+//	}
+//	for _, breed := range *breeds {
+//	    fmt.Printf("Breed: %s, Origin: %s\n", breed.Name, breed.Origin)
+//	}
+func (c *Client) GetBreeds(opts ...CatBreedOptions) (*[]CatBreedResponse, error) {
 	params := defaultBreedParams()
 
 	for _, opt := range opts {
@@ -50,17 +72,11 @@ func (c *Client) GetBreeds(opts ...CatBreedOptions) ([]CatBreedResponse, error) 
 
 	var breeds []CatBreedResponse
 
-	requestOpts := defaultRequestOptions(c)
-	requestOpts.Path = "/breeds"
-	requestOpts.Query = query
-	requestOpts.Result = &breeds
-	requestOpts.ContentType = "application/json"
-
-	err := httpclient.DoRequest(requestOpts)
+	err := httpclient.DoRequest(newRequestOptions(c, "/breeds", query, nil, &breeds))
 
 	if err != nil {
 		return nil, err
 	}
 
-	return breeds, nil
+	return &breeds, nil
 }

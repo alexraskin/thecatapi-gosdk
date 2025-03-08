@@ -33,31 +33,31 @@ func WithImageSearchLimit(limit int) CatImageSearchOptions {
 	}
 }
 
-func WithSize(size ImageSize) CatImageSearchOptions {
+func WithImageSearchSize(size ImageSize) CatImageSearchOptions {
 	return func(params *CatImageSearchParams) {
 		params.Size = size
 	}
 }
 
-func WithMimeTypes(mimeTypes []string) CatImageSearchOptions {
+func WithImageSearchMimeTypes(mimeTypes []string) CatImageSearchOptions {
 	return func(params *CatImageSearchParams) {
 		params.MimeTypes = mimeTypes
 	}
 }
 
-func WithFormat(format Format) CatImageSearchOptions {
+func WithImageSearchFormat(format Format) CatImageSearchOptions {
 	return func(params *CatImageSearchParams) {
 		params.Format = format
 	}
 }
 
-func WithHasBreeds(hasBreeds bool) CatImageSearchOptions {
+func WithImageSearchHasBreeds(hasBreeds bool) CatImageSearchOptions {
 	return func(params *CatImageSearchParams) {
 		params.HasBreeds = hasBreeds
 	}
 }
 
-func WithOrder(order OrderType) CatImageSearchOptions {
+func WithImageSearchOrder(order OrderType) CatImageSearchOptions {
 	return func(params *CatImageSearchParams) {
 		params.Order = order
 	}
@@ -89,7 +89,29 @@ func (p *CatImageSearchParams) toURLValues() url.Values {
 	return values
 }
 
-func (c *Client) SearchCats(opts ...CatImageSearchOptions) ([]CatImageSearchResponse, error) {
+// SearchCats retrieves a list of cat images from The Cat API based on the specified search parameters.
+// It allows customization of the request through functional options.
+//
+// Parameters:
+//
+//	opts - A variadic list of CatImageSearchOptions functions that modify the search parameters.
+//	       These options can be used to set filters such as size, format, order, and pagination.
+//
+// Returns:
+//
+//	*[]CatImageSearchResponse - A pointer to a slice of CatImageSearchResponse structs containing information about each cat image.
+//	error - An error if the request fails or if there is an issue with the response.
+//
+// Example usage:
+//
+//	cats, err := client.SearchCats(thecatapi.WithImageSearchLimit(5), thecatapi.WithImageSearchSize(thecatapi.SizeSmall))
+//	if err != nil {
+//	    log.Fatalf("Error searching for cats: %v", err)
+//	}
+//	for _, cat := range *cats {
+//	    fmt.Printf("Cat ID: %s, URL: %s\n", cat.ID, cat.URL)
+//	}
+func (c *Client) SearchCats(opts ...CatImageSearchOptions) (*[]CatImageSearchResponse, error) {
 	params := defaultImageSearchParams()
 
 	for _, fn := range opts {
@@ -100,11 +122,7 @@ func (c *Client) SearchCats(opts ...CatImageSearchOptions) ([]CatImageSearchResp
 
 	var cats []CatImageSearchResponse
 
-	requestOpts := defaultRequestOptions(c)
-	requestOpts.Path = "/images/search"
-	requestOpts.Query = query
-	requestOpts.Result = &cats
-	requestOpts.ContentType = "application/json"
+	requestOpts := newRequestOptions(c, "/images/search", query, nil, &cats)
 
 	err := httpclient.DoRequest(requestOpts)
 
@@ -112,5 +130,5 @@ func (c *Client) SearchCats(opts ...CatImageSearchOptions) ([]CatImageSearchResp
 		return nil, err
 	}
 
-	return cats, nil
+	return &cats, nil
 }

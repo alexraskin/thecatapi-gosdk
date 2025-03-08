@@ -1,7 +1,6 @@
 package thecatapi
 
 import (
-	"context"
 	"errors"
 	"net/url"
 	"strconv"
@@ -17,6 +16,26 @@ func WithCatImageID(id string) CatByIDImageOption {
 	}
 }
 
+// GetCatImageByID retrieves a specific cat image from The Cat API using the provided image ID.
+// It allows customization of the request through functional options.
+//
+// Parameters:
+//
+//	opts - A variadic list of CatByIDImageOption functions that modify the request parameters.
+//	       These options can be used to set the image ID and other query parameters.
+//
+// Returns:
+//
+//	*CatByIDImageResponse - A pointer to a CatByIDImageResponse struct containing information about the retrieved cat image.
+//	error - An error if the request fails, if there is an issue with the response, or if the image ID is not provided.
+//
+// Example usage:
+//
+//	image, err := client.GetCatImageByID(thecatapi.WithCatImageID("abc123"))
+//	if err != nil {
+//	    log.Fatalf("Error fetching cat image: %v", err)
+//	}
+//	fmt.Printf("Image ID: %s, URL: %s\n", image.ID, image.URL)
 func (c *Client) GetCatImageByID(opts ...CatByIDImageOption) (*CatByIDImageResponse, error) {
 	params := CatByIDImageParams{}
 	for _, fn := range opts {
@@ -29,20 +48,7 @@ func (c *Client) GetCatImageByID(opts ...CatByIDImageOption) (*CatByIDImageRespo
 
 	var response CatByIDImageResponse
 
-	requestOpts := httpclient.RequestOptions{
-		Ctx:         context.Background(),
-		BaseURL:     c.baseURL,
-		APIKey:      c.apiKey,
-		Client:      c.httpClient,
-		Method:      "GET",
-		Path:        "/images/" + params.ID,
-		Query:       nil,
-		Body:        nil,
-		ContentType: "application/json",
-		Result:      &response,
-	}
-
-	err := httpclient.DoRequest(requestOpts)
+	err := httpclient.DoRequest(newRequestOptions(c, "/images/"+params.ID, nil, nil, &response))
 
 	if err != nil {
 		return nil, err
@@ -148,6 +154,28 @@ func (p *YourCatImagesQueryParams) toURLValues() (url.Values, error) {
 	return values, nil
 }
 
+// GetYourCatImages retrieves a list of your cat images from The Cat API based on the specified query parameters.
+// It allows customization of the request through functional options.
+//
+// Parameters:
+//
+//	opts - A variadic list of YourCatImagesOption functions that modify the query parameters.
+//	       These options can be used to set filters such as limit, page, order, and other query parameters.
+//
+// Returns:
+//
+//	*YourCatImagesResponse - A pointer to a YourCatImagesResponse struct containing information about the retrieved cat images.
+//	error - An error if the request fails or if there is an issue with the response.
+//
+// Example usage:
+//
+//	images, err := client.GetYourCatImages(thecatapi.WithYourCatImagesLimit(5), thecatapi.WithYourCatImagesOrder("asc"))
+//	if err != nil {
+//	    log.Fatalf("Error fetching your cat images: %v", err)
+//	}
+//	for _, image := range images.Images {
+//	    fmt.Printf("Image ID: %s, URL: %s\n", image.ID, image.URL)
+//	}
 func (c *Client) GetYourCatImages(opts ...YourCatImagesOption) (*YourCatImagesResponse, error) {
 	params := defaultYourCatImagesQueryParams()
 
@@ -162,13 +190,7 @@ func (c *Client) GetYourCatImages(opts ...YourCatImagesOption) (*YourCatImagesRe
 
 	var response YourCatImagesResponse
 
-	requestOpts := defaultRequestOptions(c)
-	requestOpts.Path = "/images/search"
-	requestOpts.Query = values
-	requestOpts.Result = &response
-	requestOpts.ContentType = "application/json"
-
-	err = httpclient.DoRequest(requestOpts)
+	err = httpclient.DoRequest(newRequestOptions(c, "/images/search", values, nil, &response))
 	if err != nil {
 		return nil, err
 	}

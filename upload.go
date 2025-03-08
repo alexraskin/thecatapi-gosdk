@@ -18,13 +18,13 @@ func defaultCatImageUploadBody() CatImageUploadBody {
 	}
 }
 
-func WithSubID(subID string) CatImageUploadOptions {
+func WithCatImageUploadSubID(subID string) CatImageUploadOptions {
 	return func(body *CatImageUploadBody) {
 		body.SubID = &subID
 	}
 }
 
-func WithBreedIDs(breedIDs string) CatImageUploadOptions {
+func WithCatImageUploadBreedIDs(breedIDs string) CatImageUploadOptions {
 	return func(body *CatImageUploadBody) {
 		body.BreedIDs = &breedIDs
 	}
@@ -66,6 +66,32 @@ func encodeCatImageUploadBody(body CatImageUploadBody, fileName string) (*bytes.
 	return &b, writer.FormDataContentType(), nil
 }
 
+// UploadImage uploads an image to The Cat API.
+// It allows customization of the upload request through functional options.
+//
+// Parameters:
+//
+//	imageData - A byte slice containing the image data to be uploaded.
+//	fileName - The name of the file being uploaded.
+//	opts - A variadic list of CatImageUploadOptions functions that modify the upload parameters.
+//	       These options can be used to set additional fields like SubID and BreedIDs.
+//
+// Returns:
+//
+//	*CatImageUploadResponse - A pointer to a CatImageUploadResponse struct containing information about the uploaded image.
+//	error - An error if the upload fails or if there is an issue with the response.
+//
+// Example usage:
+//
+//	image, err := os.ReadFile("cat.jpg")
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+//	upload, err := client.UploadImage(image, "cat.jpg", thecatapi.WithCatImageUploadSubID("my-cat"))
+//	if err != nil {
+//	    log.Fatalf("Error uploading image: %v", err)
+//	}
+//	fmt.Printf("Uploaded Image ID: %s\n", upload.ID)
 func (c *Client) UploadImage(imageData []byte, fileName string, opts ...CatImageUploadOptions) (*CatImageUploadResponse, error) {
 	body := defaultCatImageUploadBody()
 	body.File = imageData
@@ -81,12 +107,9 @@ func (c *Client) UploadImage(imageData []byte, fileName string, opts ...CatImage
 
 	var response CatImageUploadResponse
 
-	requestOpts := defaultRequestOptions(c)
+	requestOpts := newRequestOptions(c, "/images/upload", nil, requestBody, &response)
 	requestOpts.Method = "POST"
-	requestOpts.Path = "/images/upload"
-	requestOpts.Body = requestBody
 	requestOpts.ContentType = contentType
-	requestOpts.Result = &response
 
 	err = httpclient.DoRequest(requestOpts)
 	if err != nil {
