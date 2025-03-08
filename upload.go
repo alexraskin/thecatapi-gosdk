@@ -70,8 +70,8 @@ func (c *Client) UploadImage(imageData []byte, fileName string, opts ...CatImage
 	body := defaultCatImageUploadBody()
 	body.File = imageData
 
-	for _, opt := range opts {
-		opt(&body)
+	for _, fn := range opts {
+		fn(&body)
 	}
 
 	requestBody, contentType, err := encodeCatImageUploadBody(body, fileName)
