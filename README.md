@@ -28,7 +28,7 @@ for _, cat := range cats {
 
 ### Breeds
 
-search for 
+search for breeds
 
 ```go
 breeds, err := client.GetBreeds(thecatapi.WithBreedLimit(5))
@@ -41,6 +41,8 @@ for _, breed := range breeds {
 }
 ```
 ### Upload
+
+upload cat photos :)
 
 ```go
 filePath := "testdata/cat.jpg"
